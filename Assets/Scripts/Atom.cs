@@ -71,52 +71,78 @@ public class Atom : MonoBehaviour
         for (int i =0; i < bonds.Length; i++) {
             if(bonds[i] && transform.parent != bonds[i].transform) { bonds[i].transform.localPosition = bondDirections[i] * bondLength[Z, bonds[i].Z]; }
         }
+        //same deal for bondTriggers and bondDirections
+        for(int i = 0; i < bonds.Length; i++) {
+            bondTriggers[i].center = bondDirections[i]*gameObject.GetComponent<SphereCollider>().radius;
+        }
+
+        //if all our holes are filled (heh) disable all the bondtriggers
+        for(int i = 0; i < bonds.Length; i++){ bondTriggers[i].enabled = false; }
     }
 
     //when two atoms hit eachother
     private void OnTriggerEnter(Collider other) {        
-        //do bonding
+        //some temp vars;
         Atom otherAtom;
+        
         if(otherAtom = other.gameObject.GetComponent<Atom>()) { //only do stuff if it's actually got an atom component.
+            int closestI = 0;
+            Vector3 usToThem = (other.transform.position-transform.position).normalized;
+
+            //loop through the bond directions and find the index of which ever its closest too.
+            for (int i =0; i < bondDirections.Length; i++){
+                //if its closer than currnet closest, it is the new supreme index.
+                if(Vector3.Dot(usToThem, bondDirections[i]) > Vector3.Dot(usToThem, bondDirections[closestI])) { closestI = i; }
+            }
+
             if(isHighestRank(otherAtom)) { //if we have the higher rank, proceed.
                 //bond, as long as there's holes to fill on both ends.
-                if(holes > 0 && otherAtom.holes > 0) { bond(otherAtom); }
+                if(holes > 0 && otherAtom.holes > 0) { bond(otherAtom, closestI); }
             }
-        }
+    }
     }
 
     //when we call it.
-    void bond(Atom otherAtom) {
+    void bond(Atom otherAtom, int index) {
         valenceElectrons +=1; //we've borrowed one of theirs.
         otherAtom.valenceElectrons +=1; //they've also borrowed one of ours.
 
-        /*
-        Create a bond, loop through the list of bonds, and fill in the first one that's null
-        If none of them are null, that means we can't do any bonding, so something in our first check went wrong.
-        */
+        if (!bonds[index]) { //check we aren't overwritting an existing bond
+            //set parent
+            otherAtom.transform.parent = transform;
+            otherAtom.transform.localPosition = bondDirections[index] * bondLength[Z, otherAtom.Z];
 
-        for(int i = 0; i < bonds.Length; i++) {
-            if (!bonds[i]) { //check its null
-                //set parent
-                otherAtom.transform.parent = transform;
-                otherAtom.transform.localPosition = bondDirections[i] * bondLength[Z, otherAtom.Z];
+            
+            
+            //calculate their closest bond index
+            int closestI = 0;
+            Vector3 ThemToUs = -bondDirections[index];
 
-                otherAtom.GetComponent<Rigidbody>().isKinematic = true;
-
-                Physics.IgnoreCollision(otherAtom.GetComponent<Collider>(), gameObject.GetComponent<Collider>());
-
-                //update other atom:
-                for(int l = 0; l < otherAtom.bonds.Length; l++) {
-                    if (!otherAtom.bonds[l]) { //check its null
-                        otherAtom.bonds[l] = this; //set its bond list to be the same as ours
-                        break;
-                    }
-                }
-
-                bonds[i] = otherAtom;
-
-                break;
+            //loop through the bond directions and find the index of which ever its closest too.
+            for (int i =0; i < bondDirections.Length; i++){
+                //if its closer than currnet closest, it is the new supreme index.
+                if(Vector3.Dot(ThemToUs, bondDirections[i]) > Vector3.Dot(ThemToUs, bondDirections[closestI])) { closestI = i; }
             }
+
+            //rotate it so the corresponding bond is inside us:
+            if (otherAtom.Z > 2) { otherAtom.transform.LookAt(transform, otherAtom.bondDirections[closestI]); }
+
+            otherAtom.GetComponent<Rigidbody>().isKinematic = true;
+
+            Physics.IgnoreCollision(otherAtom.GetComponent<Collider>(), gameObject.GetComponent<Collider>());
+
+            //update other atom:
+            for(int l = 0; l < otherAtom.bonds.Length; l++) {
+                if (!otherAtom.bonds[l]) { //check its null
+                    otherAtom.bonds[l] = this; //set its bond list to be the same as ours
+                    break;
+                }
+            }
+
+            bonds[index] = otherAtom;
+
+            //break;
+            bondTriggers[index].enabled = false;
         }
     }
 
