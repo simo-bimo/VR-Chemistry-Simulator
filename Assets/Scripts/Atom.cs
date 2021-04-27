@@ -77,12 +77,12 @@ public class Atom : MonoBehaviour
         }
 
         //if all our holes are filled (heh) disable all the bondtriggers
-        for(int i = 0; i < bonds.Length; i++){ bondTriggers[i].enabled = false; }
+        for(int i = 0; i < bonds.Length; i++){ if(bonds[i]) {bondTriggers[i].enabled = false;} }
     }
 
     //when two atoms hit eachother
-    private void OnTriggerEnter(Collider other) {        
-        //some temp vars;
+    private void OnTriggerEnter(Collider other) {
+        //some temp vars
         Atom otherAtom;
         
         if(otherAtom = other.gameObject.GetComponent<Atom>()) { //only do stuff if it's actually got an atom component.
@@ -91,13 +91,17 @@ public class Atom : MonoBehaviour
 
             //loop through the bond directions and find the index of which ever its closest too.
             for (int i =0; i < bondDirections.Length; i++){
-                //if its closer than currnet closest, it is the new supreme index.
-                if(Vector3.Dot(usToThem, bondDirections[i]) > Vector3.Dot(usToThem, bondDirections[closestI])) { closestI = i; }
+                //if its closer than the current closest, it is the new closest index.
+                if(Vector3.Dot(usToThem, bondDirections[i]) > Vector3.Dot(usToThem, bondDirections[closestI])) { 
+                    closestI = i; 
+                }
             }
 
             if(isHighestRank(otherAtom)) { //if we have the higher rank, proceed.
                 //bond, as long as there's holes to fill on both ends.
-                if(holes > 0 && otherAtom.holes > 0) { bond(otherAtom, closestI); }
+                if(holes > 0 && otherAtom.holes > 0) { 
+                    bond(otherAtom, closestI); 
+                }
             }
     }
     }
@@ -112,20 +116,27 @@ public class Atom : MonoBehaviour
             otherAtom.transform.parent = transform;
             otherAtom.transform.localPosition = bondDirections[index] * bondLength[Z, otherAtom.Z];
 
-            
-            
             //calculate their closest bond index
             int closestI = 0;
-            Vector3 ThemToUs = -bondDirections[index];
+            //Vector3 ThemToUs = (transform.position-otherAtom.transform.position).normalized;
+            Vector3 ThemToUs = -otherAtom.transform.localPosition.normalized;
+            gizmons.Add(new Vector3[] {otherAtom.transform.position, otherAtom.transform.position+ThemToUs, new Vector3(0.0f,0.0f,1.0f)} );
+
 
             //loop through the bond directions and find the index of which ever its closest too.
-            for (int i =0; i < bondDirections.Length; i++){
-                //if its closer than currnet closest, it is the new supreme index.
-                if(Vector3.Dot(ThemToUs, bondDirections[i]) > Vector3.Dot(ThemToUs, bondDirections[closestI])) { closestI = i; }
+            for (int i =0; i < otherAtom.bondDirections.Length; i++){
+                //if its closer than current closest, it is the new supreme index.
+                if(Vector3.Dot(ThemToUs, otherAtom.bondDirections[i]) > Vector3.Dot(ThemToUs, otherAtom.bondDirections[closestI])) { closestI = i; }
             }
 
+            gizmons.Add(new Vector3[] {otherAtom.transform.position, otherAtom.transform.position+otherAtom.bondDirections[closestI], new Vector3(1.0f,0.0f,0.0f)} );
+
+            //rotation from forward to up, as thats what trans.LookAt requires
+            Quaternion relativerot = Quaternion.FromToRotation(Vector3.forward, otherAtom.bondDirections[closestI]);
+            
             //rotate it so the corresponding bond is inside us:
-            if (otherAtom.Z > 2) { otherAtom.transform.LookAt(transform, otherAtom.bondDirections[closestI]); }
+            otherAtom.transform.rotation = Quaternion.LookRotation(ThemToUs)*relativerot;
+            gizmons.Add(new Vector3[] {otherAtom.transform.position, otherAtom.transform.position+otherAtom.bondDirections[closestI], new Vector3(0.0f,1.0f,0.0f)} );
 
             otherAtom.GetComponent<Rigidbody>().isKinematic = true;
 
@@ -143,6 +154,7 @@ public class Atom : MonoBehaviour
 
             //break;
             bondTriggers[index].enabled = false;
+            otherAtom.bondTriggers[closestI].enabled = false;
         }
     }
 
@@ -185,7 +197,10 @@ public class Atom : MonoBehaviour
             maxbonds = valenceShellSize-valenceElectrons;
         }
 
-    
+        //remove spherecolliders before resetting
+        for (int i = 0; i < bondTriggers.Length; i++) {
+            Destroy(bondTriggers[i]);
+        }
 
         bonds = new Atom[maxbonds];
         bondDirections= new Vector3[valenceShellSize/2];
@@ -230,5 +245,14 @@ public class Atom : MonoBehaviour
     public void specUpdateZ(int newZ) {
         Z = newZ;
         updateZ();
+    }
+
+    public List<Vector3[]> gizmons = new List<Vector3[]>();
+    private void OnDrawGizmos() {
+        Gizmos.color = Color.blue;
+        for(int i = 0; i < gizmons.Capacity; i++) {
+            Gizmos.color = new Color(gizmons[i][2].x, gizmons[i][2].y,gizmons[i][2].z, 1.0f );
+            Gizmos.DrawLine(gizmons[i][0], gizmons[i][1]);
+        }
     }
 }
