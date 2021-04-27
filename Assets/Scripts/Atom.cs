@@ -185,6 +185,8 @@ public class Atom : MonoBehaviour
             maxbonds = valenceShellSize-valenceElectrons;
         }
 
+    
+
         bonds = new Atom[maxbonds];
         bondDirections= new Vector3[valenceShellSize/2];
         bondTriggers = new SphereCollider[maxbonds];
