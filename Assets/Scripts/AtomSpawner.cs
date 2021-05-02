@@ -11,7 +11,7 @@ public class AtomSpawner : MonoBehaviour
     public GameObject zDisplay;
     private Vector3 spawnPos;
     public float spawnDist = 0.4f;
-    public double coolDown = 0.2;
+    public double coolDown = 0.05;
     public double timeSince = 2.0;
     
     public int spawnZ = 1; //the Z value to give to newly spawned atoms.
@@ -26,9 +26,9 @@ public class AtomSpawner : MonoBehaviour
         //check update
         //float indexDown = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, m_controller);
         //if(0.35f < indexDown && indexDown < 0.55f &&) { spawnCube(spawnPos); }
-        if(OVRInput.Get(OVRInput.Button.One, m_controller) && timeSince >= coolDown) { spawnAtom(); }
+        if(OVRInput.GetDown(OVRInput.Button.One, m_controller)) { spawnAtom(); }
 
-        timeSince += 1.0 * Time.deltaTime;
+        timeSince += Time.deltaTime;
 
         /*logic to change spawnZ based on thumbstick
         float x = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, m_controller).x; //get the sideways changedness of the thumbstick
@@ -41,7 +41,7 @@ public class AtomSpawner : MonoBehaviour
             netChange = 0.0f;
         }
         */
-        if(OVRInput.Get(OVRInput.Button.Two, m_controller)) { spawnZ += 1; }
+        if(OVRInput.GetUp(OVRInput.Button.Two, m_controller)) { spawnZ += 1; }
 
         //max and minimise spawnZ
         if(spawnZ < 1) {spawnZ = 1;}

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 5797925390874879632}
   - component: {fileID: 5797925390874879647}
   - component: {fileID: 5797925390874879646}
-  - component: {fileID: 6440396783850144679}
+  - component: {fileID: -7760645059599570296}
   m_Layer: 0
   m_Name: Atom
   m_TagString: Untagged
@@ -126,9 +126,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 570a733a94586fb4498e25d7b492a7dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  val_e: 1
-  hol_e: 1
---- !u!114 &6440396783850144679
+  Z: 1
+  valenceElectrons: 1
+  valenceShellSize: 2
+  holes: 1
+  molecularmass: 0
+  bonds: []
+  bondDirections: []
+  bondTriggers: []
+  rank: 0
+--- !u!114 &-7760645059599570296
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -137,7 +144,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5797925390874879645}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02d61468f8b77ae4b92c344bc9a600fb, type: 3}
+  m_Script: {fileID: 11500000, guid: 7b9384a7a1f64334c9a1852b8bc621c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_allowOffhandGrab: 1

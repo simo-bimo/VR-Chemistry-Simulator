@@ -43,6 +43,8 @@ public class Atom : MonoBehaviour
     public int valenceShellSize = 2; //ie 8 for C or O.
     
     public int holes = 1; //unfilled spots for electrons in the valence shell, calculated every frame under update();
+
+    public int molecularmass = 0; // the whole groups mass
     
     //bonds are defined by these three lists. First one is the atom we're bonded to, second is the direction of the bond, third is the trigger for the bond.
     public Atom[] bonds;
@@ -78,6 +80,12 @@ public class Atom : MonoBehaviour
 
         //if all our holes are filled (heh) disable all the bondtriggers
         for(int i = 0; i < bonds.Length; i++){ if(bonds[i]) {bondTriggers[i].enabled = false;} }
+
+        molecularmass = Z;
+        Atom[] atomicChildren = gameObject.GetComponentsInChildren<Atom>();
+        for (int i = 0; i < atomicChildren.Length; i++) {
+            molecularmass += atomicChildren[i].Z;
+        }
     }
 
     //when two atoms hit eachother
@@ -138,9 +146,11 @@ public class Atom : MonoBehaviour
             otherAtom.transform.rotation = Quaternion.LookRotation(ThemToUs)*relativerot;
             gizmons.Add(new Vector3[] {otherAtom.transform.position, otherAtom.transform.position+otherAtom.bondDirections[closestI], new Vector3(0.0f,1.0f,0.0f)} );
 
-            otherAtom.GetComponent<Rigidbody>().isKinematic = true;
-
             Physics.IgnoreCollision(otherAtom.GetComponent<Collider>(), gameObject.GetComponent<Collider>());
+
+            //addother atoms collider to our grabpoints, and disable its grabbability temporarily.
+            //otherAtom.gameObject.GetComponent<Grabbable>().enabled = false;
+            //GetComponent<Grabbable>().addGrabpoint(otherAtom.GetComponents<Collider>()[0]);
 
             //update other atom:
             for(int l = 0; l < otherAtom.bonds.Length; l++) {
@@ -160,8 +170,10 @@ public class Atom : MonoBehaviour
 
     //compare sizes:
     bool isHighestRank(Atom otherAtom) {
-        if(otherAtom.Z < Z) {return true; }
+        if(otherAtom.Z < Z) {return true; } //if we're bigger
         if(otherAtom.Z > Z) {return false; }
+        //if(otherAtom.molecularmass < molecularmass) {return true;} //if we're a bigger group
+        //if(otherAtom.molecularmass > molecularmass) {return false;}
         if (otherAtom.rank < rank) { return true; } // if we're bigger, go for it
         if (otherAtom.rank == rank) { 
             //if we get the same rank, reshuffle
@@ -247,6 +259,8 @@ public class Atom : MonoBehaviour
         updateZ();
     }
 
+
+    /* DEBUGGING STUFF */
     public List<Vector3[]> gizmons = new List<Vector3[]>();
     private void OnDrawGizmos() {
         Gizmos.color = Color.blue;
