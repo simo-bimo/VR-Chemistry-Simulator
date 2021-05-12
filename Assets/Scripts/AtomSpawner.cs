@@ -28,19 +28,17 @@ public class AtomSpawner : MonoBehaviour
         //if(0.35f < indexDown && indexDown < 0.55f &&) { spawnCube(spawnPos); }
         if(OVRInput.GetDown(OVRInput.Button.One, m_controller)) { spawnAtom(); }
 
-        timeSince += Time.deltaTime;
+        float indexdown = OVRInput.Get(OVRInput.Axis1D.SecondaryIndexTrigger, m_controller);
 
-        /*logic to change spawnZ based on thumbstick
-        float x = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, m_controller).x; //get the sideways changedness of the thumbstick
-        if (Mathf.Abs(x) > 0.5f) {
-            netChange += x * Time.deltaTime * 5.0f;
-        }
+        print(string.Format("Trigger grabbedness on {0} is {1}.", m_controller, indexdown));
+        print(string.Format("Trigger grabbedness on Raw LIndexTrigger is {0}.", OVRInput.Get(OVRInput.RawAxis1D.LIndexTrigger)));
+        print(string.Format("Trigger grabbedness on Raw RIndexTrigger is {0}.", OVRInput.Get(OVRInput.RawAxis1D.RIndexTrigger)));
 
-        if(netChange >= 1.0f) {
-            spawnZ += Mathf.FloorToInt(netChange);
-            netChange = 0.0f;
+        if(OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, m_controller) < 0.2f) {
+            BondManager bManager = GameObject.FindGameObjectWithTag("bondManager").GetComponent<BondManager>();
+            if(bManager.renderMode==0) {bManager.setRenderMode(1); }
+            else {bManager.setRenderMode(0);}
         }
-        */
         if(OVRInput.GetUp(OVRInput.Button.Two, m_controller)) { spawnZ += 1; }
 
         //max and minimise spawnZ
@@ -53,7 +51,7 @@ public class AtomSpawner : MonoBehaviour
     [ContextMenu("spawnAtom")]
     public void spawnAtom() {
         GameObject newAtom = Instantiate(atomPrefab, spawnPos, Quaternion.identity);
-        newAtom.GetComponent<Atom>().specUpdateZ(spawnZ); // set its Z.
+        newAtom.GetComponent<Atom>().updateZ(spawnZ); // set its Z.
         timeSince = 0; //reset cooldown.
     }
 }

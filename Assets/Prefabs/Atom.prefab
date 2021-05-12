@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: -7760645059599570296}
   m_Layer: 0
   m_Name: Atom
-  m_TagString: Untagged
+  m_TagString: Atom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -129,12 +129,10 @@ MonoBehaviour:
   Z: 1
   valenceElectrons: 1
   valenceShellSize: 2
-  holes: 1
   molecularmass: 0
   bonds: []
   bondDirections: []
   bondTriggers: []
-  rank: 0
 --- !u!114 &-7760645059599570296
 MonoBehaviour:
   m_ObjectHideFlags: 0
