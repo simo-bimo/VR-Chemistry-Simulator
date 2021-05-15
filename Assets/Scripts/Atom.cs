@@ -22,15 +22,14 @@ public class Atom : MonoBehaviour
     public int Z = 1;
     public int valenceElectrons = 1; //ie. 4 for C, 6 for O.
     public int valenceShellSize = 2; //ie 8 for C or O.
-
-    protected int m_holes = 1; //unfilled spots for electrons in the valence shell, calculated every frame under update();
+    protected int m_holes = 1;
     public int holes { get { return m_holes; } }
 
     public int molecularmass = 0; // the whole groups mass
     private float lewisScale = 0.1f;
     public float regularScale;
     
-    //bonds are defined by these three lists. First one is the atom we're bonded to, second is the direction of the bond, third is the trigger for the bond.
+    //bonds are defined by these three lists
     public List<Bond> bonds;
     public Vector3[] bondDirections;
     public SphereCollider[] bondTriggers;
@@ -61,9 +60,9 @@ public class Atom : MonoBehaviour
     private void OnTriggerEnter(Collider other) {     
         //Ask the bondmanager to make a bond, if it does, disable the bond collider;
         if (other.gameObject.tag == "Atom") {
-            gameObject.GetComponent<Rigidbody>().detectCollisions = false;
+            //gameObject.GetComponent<Rigidbody>().detectCollisions = false;
             bManager.requestBond(this, other.gameObject.GetComponent<Atom>());
-            gameObject.GetComponent<Rigidbody>().detectCollisions = true;
+            //gameObject.GetComponent<Rigidbody>().detectCollisions = true;
         }
     }
 

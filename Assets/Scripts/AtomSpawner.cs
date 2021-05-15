@@ -11,11 +11,8 @@ public class AtomSpawner : MonoBehaviour
     public GameObject zDisplay;
     private Vector3 spawnPos;
     public float spawnDist = 0.4f;
-    public double coolDown = 0.05;
-    public double timeSince = 2.0;
     
     public int spawnZ = 1; //the Z value to give to newly spawned atoms.
-    private float netChange = 0f; //cumulative addition to Z based on thumbstick
 
     private float oldIndexDown;
 
@@ -24,13 +21,15 @@ public class AtomSpawner : MonoBehaviour
     {
         spawnPos = OVRInput.GetLocalControllerPosition(m_controller) + transform.forward * spawnDist;
 
-        if(OVRInput.GetUp(OVRInput.Button.One, m_controller)) { spawnAtom(); }
-
-        float indexdown = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, m_controller);
-        if(indexdown == 1.0f && indexdown > oldIndexDown) {
+        if(OVRInput.GetUp(OVRInput.Button.One, m_controller)) { 
             BondManager bManager = GameObject.FindGameObjectWithTag("bondManager").GetComponent<BondManager>();
             if(bManager.renderMode==0) {bManager.setRenderMode(1); }
             else {bManager.setRenderMode(0);}
+        }
+
+        float indexdown = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, m_controller);
+        if(indexdown == 1.0f && indexdown > oldIndexDown) {
+            spawnAtom();
         }
         
         if(OVRInput.GetUp(OVRInput.Button.Two, m_controller)) { spawnZ += 1; }
@@ -48,6 +47,5 @@ public class AtomSpawner : MonoBehaviour
     public void spawnAtom() {
         GameObject newAtom = Instantiate(atomPrefab, spawnPos, Quaternion.identity);
         newAtom.GetComponent<Atom>().updateZ(spawnZ); // set its Z.
-        timeSince = 0; //reset cooldown.
     }
 }

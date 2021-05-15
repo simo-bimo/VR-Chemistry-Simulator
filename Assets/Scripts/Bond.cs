@@ -35,27 +35,18 @@ public class Bond : MonoBehaviour
 
     /* PUBLIC ACCESS METHODS */
     public bool create(Atom prim, Atom kid, float length = 0.4f, int order = 1) {
-        //set primary
         m_primary = prim;
         m_child = kid;
 
-        //set the bond order, defaults to 1; and the bondlength;
         m_bondorder = order;
         bondLength = length;
         
-        //disable collision betweens them
         Physics.IgnoreCollision(m_primary.GetComponent<Collider>(), m_child.GetComponent<Collider>());
 
-        //update valencces.
         m_primary.valenceElectrons += bondorder;
         m_child.valenceElectrons += bondorder;
 
-        //set parent
         m_child.transform.parent = this.transform;
-
-        if (m_primary.bonds.Count == 0) {
-            
-        }
 
         //the direction from parent to child.
         Vector3 primToChild = m_child.transform.localPosition.normalized;
@@ -68,23 +59,26 @@ public class Bond : MonoBehaviour
         //except about the y axis;
         m_child.transform.localRotation = Quaternion.FromToRotation(Vector3.up, -primToChild);
 
-        //Rigidbody rb = m_child.GetComponent<Rigidbody>();
-        //Destroy(rb);
-
-        //if it's not the first bond, we have to put it in the correct position
-        if(m_primary.bonds != null) {
+        
+        //if this is the last bond, put it in the zero position, just so we know it gets filled.
+        if(m_primary.bonds.Count == m_primary.bondDirections.Length) {
+            bondDirection = m_primary.bondDirections[0];
+            m_primary.bonds[0] = this;
+        } else {
             bondDirection = m_primary.bondDirections[m_primary.bonds.Count];
+            m_primary.bonds.Add(this);
         }
 
         // move it to the correct position;
         m_child.transform.localPosition = bondDirection * bondLength;// * inverseScalar;
         
         //add the created bond to its atoms lists.
-        m_primary.bonds.Add(this);
+        
         m_child.bonds[0] = this;
 
         Rigidbody rb = m_child.GetComponent<Rigidbody>();
         Destroy(rb);
+        Destroy(m_child.GetComponent<Grabbable>());
 
         updateSticks();
 
@@ -97,39 +91,15 @@ public class Bond : MonoBehaviour
         else { return null; }
     }
 
-    /*public bool updateScale(float scalar) {
-        gameObject.transform.localScale = scalar*(new Vector3(1,1,1));
-        updateSticks();
-        return true;
-    }
-*/
-
     /* PRIVATE ACCESS METHODS */
     private void Update() {
-        //set the child so the parent is always above it in local space.
-        //Functionally freezes rotation except about the y-axis.
         Vector3 primToChild = m_child.transform.localPosition.normalized;
         float currentRot = m_child.transform.eulerAngles.y;
         Quaternion relativeRot = Quaternion.FromToRotation(Vector3.up, -primToChild);
-        //Vector3 EulerRot = relativeRot.eulerAngles;
-        //EulerRot.y = currentRot;
-        //relativeRot.eulerAngles = Eu
-
-        
 
         m_child.transform.localRotation = relativeRot;
-        //m_child.transform.localEulerAngles = new Vector3(m_child.transform.localEulerAngles.x,m_child.transform.localEulerAngles.z);
 
-        m_child.transform.localPosition = bondDirection * bondLength;// * inverseScalar;
-
-
-        //update grabpoints
-        //just force releases any children, only lets you grab top dogs.
-        Grabbable kid_grabbed = m_child.GetComponent<Grabbable>();
-        if(kid_grabbed.isGrabbed) {
-            OVRGrabber kidnapper = kid_grabbed.grabbedBy;
-            kidnapper.ForceRelease(kid_grabbed);
-        }
+        m_child.transform.localPosition = bondDirection * bondLength;
     }
 
     //util methods
@@ -181,6 +151,8 @@ public class Bond : MonoBehaviour
         }
 
         m_child.transform.SetParent(null);
+        m_child.gameObject.AddComponent<Rigidbody>().useGravity = false;
+        m_child.gameObject.AddComponent<Grabbable>();
 
         m_primary.valenceElectrons += pElectronOverride*m_bondorder;
         m_child.valenceElectrons += cElectronOverride*m_bondorder;

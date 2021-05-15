@@ -45,11 +45,20 @@ public class BondManager : MonoBehaviour
         if(bondRegistry.Contains(new RegistryEntry(other, me))) {return false;}
         if(bondRegistry.Contains(new RegistryEntry(me, other))) {return false;}
 
+        bondRegistry.Add(new RegistryEntry(me, other));
+
         //is this a valid bond?
         if(me.holes == 0) {return false;}
         if(other.holes == 0) {return false;}
 
-        createBond(me, other);
+        if(me.Z > other.Z) {createBond(me, other);}
+        else{
+            if(me.Z < other.Z) {createBond(other, me);} 
+            else {
+                if(me.bonds.Count < other.bonds.Count) { createBond(me, other); }
+                if(me.bonds.Count > other.bonds.Count) { createBond(other, me); }
+            }
+        }
         return true;
     }
 
@@ -61,8 +70,6 @@ public class BondManager : MonoBehaviour
 
         bondObj.transform.parent = prim.transform;
         bondObj.transform.localPosition = new Vector3(0,0,0);
-
-        bondRegistry.Add(new RegistryEntry(prim, other));
         return true;
     }
 
