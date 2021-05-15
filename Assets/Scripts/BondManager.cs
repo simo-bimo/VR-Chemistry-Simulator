@@ -57,6 +57,9 @@ public class BondManager : MonoBehaviour
             else {
                 if(me.bonds.Count < other.bonds.Count) { createBond(me, other); }
                 if(me.bonds.Count > other.bonds.Count) { createBond(other, me); }
+                else {
+                    createBond(me, other);
+                }
             }
         }
         return true;
