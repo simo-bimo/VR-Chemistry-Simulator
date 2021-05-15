@@ -34,7 +34,6 @@ public class Atom : MonoBehaviour
     public List<Bond> bonds;
     public Vector3[] bondDirections;
     public SphereCollider[] bondTriggers;
-    
     private BondManager bManager;
 
     private void Start() {

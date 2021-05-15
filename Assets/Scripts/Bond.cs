@@ -124,7 +124,12 @@ public class Bond : MonoBehaviour
 
 
         //update grabpoints
-
+        //just force releases any children, only lets you grab top dogs.
+        Grabbable kid_grabbed = m_child.GetComponent<Grabbable>();
+        if(kid_grabbed.isGrabbed) {
+            OVRGrabber kidnapper = kid_grabbed.grabbedBy;
+            kidnapper.ForceRelease(kid_grabbed);
+        }
     }
 
     //util methods

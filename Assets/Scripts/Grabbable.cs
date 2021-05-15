@@ -4,14 +4,11 @@ using UnityEngine;
 
 public class Grabbable : OVRGrabbable
 {
-    public void addGrabpoint(Collider newgrabpoint) {
-        int length = m_grabPoints.Length;
-        Collider[] tempPoints = new Collider[length];
-        tempPoints = m_grabPoints;
-        m_grabPoints = new Collider[length+1];
-        for (int i = 0; i < length; i++) {
-            m_grabPoints[i] = tempPoints[i];
-        }
-        grabPoints[length+1] = newgrabpoint;
+    override public void GrabBegin(OVRGrabber hand, Collider grabPoint)
+    {
+        m_grabbedBy = hand;
+        print(string.Format("{0} has begun being grabbed by {1}. The grabPoint is a child of {2}.", this.gameObject, m_grabbedBy.gameObject, grabPoint.gameObject));
+        m_grabbedCollider = grabPoint;
+        gameObject.GetComponent<Rigidbody>().isKinematic = true;
     }
 }
