@@ -15,6 +15,11 @@ public class AtomSpawner : MonoBehaviour
     public int spawnZ = 1; //the Z value to give to newly spawned atoms.
 
     private float oldIndexDown;
+    private BondManager bManager;
+
+    private void Start() {
+        bManager = GameObject.FindGameObjectWithTag("bondManager").GetComponent<BondManager>();
+    }
 
     // Update is called once per frame
     private void Update()
@@ -22,7 +27,6 @@ public class AtomSpawner : MonoBehaviour
         spawnPos = OVRInput.GetLocalControllerPosition(m_controller) + transform.forward * spawnDist;
 
         if(OVRInput.GetUp(OVRInput.Button.One, m_controller)) { 
-            BondManager bManager = GameObject.FindGameObjectWithTag("bondManager").GetComponent<BondManager>();
             if(bManager.renderMode==0) {bManager.setRenderMode(1); }
             else {bManager.setRenderMode(0);}
         }
@@ -47,5 +51,6 @@ public class AtomSpawner : MonoBehaviour
     public void spawnAtom() {
         GameObject newAtom = Instantiate(atomPrefab, spawnPos, Quaternion.identity);
         newAtom.GetComponent<Atom>().updateZ(spawnZ); // set its Z.
+        newAtom.GetComponent<Atom>().updateRender(bManager.renderMode);
     }
 }

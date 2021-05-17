@@ -43,8 +43,7 @@ public class Bond : MonoBehaviour
         
         Physics.IgnoreCollision(m_primary.GetComponent<Collider>(), m_child.GetComponent<Collider>());
 
-        m_primary.valenceElectrons += bondorder;
-        m_child.valenceElectrons += bondorder;
+        
 
         m_child.transform.parent = this.transform;
 
@@ -61,7 +60,7 @@ public class Bond : MonoBehaviour
 
         
         //if this is the last bond, put it in the zero position, just so we know it gets filled.
-        if(m_primary.bonds.Count == m_primary.bondDirections.Length) {
+        if(m_primary.valenceShellSize-m_primary.valenceElectrons == 1) {
             bondDirection = m_primary.bondDirections[0];
             m_primary.bonds[0] = this;
         } else {
@@ -82,6 +81,9 @@ public class Bond : MonoBehaviour
 
         updateSticks();
 
+        m_primary.valenceElectrons += bondorder;
+        m_child.valenceElectrons += bondorder;
+
         return true;
     }
 
@@ -100,6 +102,12 @@ public class Bond : MonoBehaviour
         m_child.transform.localRotation = relativeRot;
 
         m_child.transform.localPosition = bondDirection * bondLength;
+
+        for (int i = 0; i < m_primary.bonds.Count; i++) {
+            if (m_primary.bonds[i] == this) {
+                bondDirection = m_primary.bondDirections[i];
+            }
+        }
     }
 
     //util methods

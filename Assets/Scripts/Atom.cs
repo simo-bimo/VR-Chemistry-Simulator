@@ -24,15 +24,14 @@ public class Atom : MonoBehaviour
     public int valenceShellSize = 2; //ie 8 for C or O.
     protected int m_holes = 1;
     public int holes { get { return m_holes; } }
-
-    public int molecularmass = 0; // the whole groups mass
     private float lewisScale = 0.1f;
     public float regularScale;
+
+    public bool isLeavingGroup = false;
     
     //bonds are defined by these three lists
     public List<Bond> bonds;
     public Vector3[] bondDirections;
-    public SphereCollider[] bondTriggers;
     private BondManager bManager;
 
     private void Start() {
@@ -42,18 +41,11 @@ public class Atom : MonoBehaviour
 
         updateZ();
         updateDirections();
+
+
     }
     private void Update() {
         m_holes = valenceShellSize - valenceElectrons;
-
-        //if all our m_holes are filled (heh) disable all the bondtriggers
-        if(m_holes == 0) { for(int i = 0; i < bondTriggers.Length; i++){ bondTriggers[i].enabled = false;} }
-
-        molecularmass = 0;
-        Atom[] atomicChildren = gameObject.GetComponentsInChildren<Atom>();
-        for (int i = 0; i < atomicChildren.Length; i++) {
-            molecularmass += atomicChildren[i].Z;
-        }
     }
 
     //when two atoms hit eachother
@@ -76,10 +68,6 @@ public class Atom : MonoBehaviour
         }
     }
     //update all the other stuff once Z is updated, just here so that the controller can call it to set Z dynamically.
-    [ContextMenu("Update Z")]
-    public void yeet() {
-        updateZ();
-    }
     public void updateZ(int newZ = 0) {
         //update the Z if necessary.
         if(newZ != 0) { Z = newZ; }
@@ -104,26 +92,8 @@ public class Atom : MonoBehaviour
             maxbonds = valenceShellSize-valenceElectrons;
         }
 
-        //remove spherecolliders before resetting
-        for (int i = 0; i < bondTriggers.Length; i++) {
-            Destroy(bondTriggers[i]);
-        }
-
         bondDirections= new Vector3[valenceShellSize/2];
-        bondTriggers = new SphereCollider[maxbonds];
-
         updateDirections();
-
-        //set bondTriggers
-        for (int i = 0; i < bondTriggers.Length; i++) {
-            bondTriggers[i] = gameObject.AddComponent<SphereCollider>();
-            bondTriggers[i].radius = 0.3f;
-            bondTriggers[i].isTrigger = true;
-            bondTriggers[i].center = bondDirections[i]*gameObject.GetComponent<SphereCollider>().radius;
-
-            //debugging tool to be able to see it
-            //Gizmos.DrawWireSphere(transform.position+bondTriggers[i].center, bondTriggers[i].radius);
-        }
 
         //set the material colour based on Z
         Material[] newMats = gameObject.GetComponent<MeshRenderer>().materials; //load the material
@@ -137,14 +107,33 @@ public class Atom : MonoBehaviour
         
     }
     public void updateDirections(float bondAngle = 104.5f) {
+
+        int bondCount = bondDirections.Length;
+        for (int i = 0; i < bonds.Count; i++) {
+            if (bonds[i]) { bondCount -= (bonds[i].bondorder-1); }
+        }
+        bondDirections = new Vector3[bondCount];
         bondDirections[0] = Vector3.up;
 
-        if (bondDirections.Length == 4) {
-            Quaternion upToRight = Quaternion.AngleAxis(bondAngle, Vector3.forward);
-            bondDirections[1] = upToRight * bondDirections[0];
-            Quaternion relativeRot = Quaternion.AngleAxis(120f, Vector3.up);
-            bondDirections[2] = relativeRot*bondDirections[1];
-            bondDirections[3] = relativeRot*bondDirections[2];
+        Quaternion upToRight = Quaternion.AngleAxis(bondAngle, Vector3.forward);
+
+        switch (bondCount) {
+            case 2:
+                bondDirections[1] = -bondDirections[0];
+                break;
+            case 3:
+                bondAngle = 120f;
+                upToRight = Quaternion.AngleAxis(bondAngle, Vector3.forward);
+                bondDirections[1] = upToRight * bondDirections[0];
+                bondDirections[2] = upToRight * bondDirections[1];
+                break;
+            case 4:
+                upToRight = Quaternion.AngleAxis(bondAngle, Vector3.forward);
+                bondDirections[1] = upToRight * bondDirections[0];
+                Quaternion relativeRot = Quaternion.AngleAxis(120f, Vector3.up);
+                bondDirections[2] = relativeRot*bondDirections[1];
+                bondDirections[3] = relativeRot*bondDirections[2];
+            break;
         }
     }
     private void updateScales(float scalar) {
@@ -163,5 +152,10 @@ public class Atom : MonoBehaviour
             Gizmos.color = new Color(gizmons[i][2].x, gizmons[i][2].y,gizmons[i][2].z, 1.0f );
             Gizmos.DrawLine(gizmons[i][0], gizmons[i][1]);
         }
+    }
+
+    [ContextMenu("Update Z")]
+    public void yeet() {
+        updateZ();
     }
 }
